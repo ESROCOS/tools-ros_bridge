@@ -1,0 +1,8 @@
+build/*
+*.pyc
+__pycache__
+.cache
+test/echo_point/taste
+test/echo_point/bridge
+
+test/camera_simulator/build/*

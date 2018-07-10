@@ -1,0 +1,73 @@
+#!/usr/bin/env python2
+
+# H2020 ESROCOS Project
+# Company: GMV Aerospace & Defence S.A.U.
+# Licence: GPLv2
+
+import os
+import sys
+import errno
+import shutil
+import getopt
+from subprocess import call
+
+from rosBridgeModule import bridgeGenerator
+from rosBridgeModule.ErrorCodes import ErrorCodes
+
+
+def main():
+    (binDir, funcName, outDir) = parse_args()
+    try:
+        result = bridgeGenerator.generate(binDir, funcName, outDir)
+        exit(result)
+    except Exception as ex:
+        print('An exception occurred: {}'.format(ex))
+        return ErrorCodes.EXCEP_ERROR.value
+        
+
+
+def parse_args():
+    '''
+    Parse command-line arguments
+    :returns binDir, funcName, outDir
+    '''
+    binDir = ''
+    funcName = ''
+    outDir = ''
+
+    try:
+        args = sys.argv[1:]
+        optList, args = getopt.gnu_getopt(
+            args,
+            'h',
+            ['help'])
+    except ex:
+        usage()
+        sys.exit(ErrorCodes.ARGS_ERROR.value)
+    
+    for opt, arg in optList:
+        if opt == '-h':
+            usage()
+            sys.exit(ErrorCodes.OK)
+
+    if len(args) == 3:
+        binDir = args[0]
+        funcName = args[1]
+        outDir = args[2]
+    else:
+        usage()
+        sys.exit(ErrorCodes.ARGS_ERROR.value)
+
+    return (binDir, funcName, outDir)
+
+
+def usage():
+    '''
+    Print command-line usage
+    '''
+    print('Usage: {} <taste-binary-folder> <function-name> <output-folder>'.format(sys.argv[0]))
+
+
+if __name__ == "__main__":
+    main()
+

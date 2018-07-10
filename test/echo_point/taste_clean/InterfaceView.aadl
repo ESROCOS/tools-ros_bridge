@@ -1,0 +1,174 @@
+---------------------------------------------------
+-- AADL2.1
+-- TASTE type interfaceview
+-- 
+-- generated code: do not edit
+---------------------------------------------------
+
+PACKAGE interfaceview::IV::ros_bridge
+PUBLIC
+
+WITH interfaceview::IV::test;
+WITH Taste;
+WITH DataView;
+WITH TASTE_IV_Properties;
+SUBPROGRAM PI_pointToRos
+FEATURES
+  pt : IN PARAMETER DataView::Geometry_msgs_Point {
+    Taste::encoding => NATIVE;
+  };
+PROPERTIES
+  Taste::Associated_Queue_Size => 1;
+END PI_pointToRos;
+
+SUBPROGRAM IMPLEMENTATION PI_pointToRos.others
+PROPERTIES
+  Compute_Execution_Time => 0 ms .. 0 ms;
+END PI_pointToRos.others;
+
+SUBPROGRAM RI_point32fromRos
+FEATURES
+  pt : IN PARAMETER DataView::Geometry_msgs_Point32 {
+    Taste::encoding => NATIVE;
+  };
+END RI_point32fromRos;
+
+SUBPROGRAM IMPLEMENTATION RI_point32fromRos.others
+END RI_point32fromRos.others;
+
+SYSTEM ros_bridge
+FEATURES
+  PI_pointToRos : PROVIDES SUBPROGRAM ACCESS interfaceview::IV::ros_bridge::PI_pointToRos.others {
+    Taste::coordinates => "150124 57019";
+    Taste::RCMoperationKind => sporadic;
+    Taste::RCMperiod => 0 ms;
+    Taste::Deadline => 0 ms;
+    Taste::InterfaceName => "pointToRos";
+  };
+  RI_point32fromRos : REQUIRES SUBPROGRAM ACCESS interfaceview::IV::test::PI_point32fromRos.others {
+    Taste::coordinates => "150124 68044";
+    Taste::RCMoperationKind => any;
+    Taste::InterfaceName => "point32fromRos";
+    Taste::labelInheritance => "true";
+  };
+PROPERTIES
+  Source_Language => (GUI);
+  Taste::Active_Interfaces => any;
+END ros_bridge;
+
+SYSTEM IMPLEMENTATION ros_bridge.others
+END ros_bridge.others;
+
+END interfaceview::IV::ros_bridge;
+
+PACKAGE interfaceview::IV::test
+PUBLIC
+
+WITH interfaceview::IV::ros_bridge;
+WITH Taste;
+WITH DataView;
+WITH TASTE_IV_Properties;
+SUBPROGRAM PI_run
+PROPERTIES
+  Taste::Associated_Queue_Size => 1;
+END PI_run;
+
+SUBPROGRAM IMPLEMENTATION PI_run.others
+PROPERTIES
+  Compute_Execution_Time => 0 ms .. 0 ms;
+END PI_run.others;
+
+SUBPROGRAM PI_point32fromRos
+FEATURES
+  pt : IN PARAMETER DataView::Geometry_msgs_Point32 {
+    Taste::encoding => NATIVE;
+  };
+PROPERTIES
+  Taste::Associated_Queue_Size => 1;
+END PI_point32fromRos;
+
+SUBPROGRAM IMPLEMENTATION PI_point32fromRos.others
+PROPERTIES
+  Compute_Execution_Time => 0 ms .. 0 ms;
+END PI_point32fromRos.others;
+
+SUBPROGRAM RI_pointToRos
+FEATURES
+  pt : IN PARAMETER DataView::Geometry_msgs_Point {
+    Taste::encoding => NATIVE;
+  };
+END RI_pointToRos;
+
+SUBPROGRAM IMPLEMENTATION RI_pointToRos.others
+END RI_pointToRos.others;
+
+SYSTEM test
+FEATURES
+  PI_run : PROVIDES SUBPROGRAM ACCESS interfaceview::IV::test::PI_run.others {
+    Taste::coordinates => "102202 49153";
+    Taste::RCMoperationKind => cyclic;
+    Taste::RCMperiod => 1000 ms;
+    Taste::Deadline => 0 ms;
+    Taste::InterfaceName => "run";
+  };
+  PI_point32fromRos : PROVIDES SUBPROGRAM ACCESS interfaceview::IV::test::PI_point32fromRos.others {
+    Taste::coordinates => "123301 68053";
+    Taste::RCMoperationKind => sporadic;
+    Taste::RCMperiod => 0 ms;
+    Taste::Deadline => 0 ms;
+    Taste::InterfaceName => "point32fromRos";
+  };
+  RI_pointToRos : REQUIRES SUBPROGRAM ACCESS interfaceview::IV::ros_bridge::PI_pointToRos.others {
+    Taste::coordinates => "123301 56713";
+    Taste::RCMoperationKind => any;
+    Taste::InterfaceName => "pointToRos";
+    Taste::labelInheritance => "true";
+  };
+PROPERTIES
+  Source_Language => (C);
+  Taste::Active_Interfaces => any;
+END test;
+
+SYSTEM IMPLEMENTATION test.others
+END test.others;
+
+END interfaceview::IV::test;
+
+PACKAGE interfaceview::IV
+PUBLIC
+
+WITH interfaceview::IV::ros_bridge;
+WITH interfaceview::IV::test;
+WITH Taste;
+WITH DataView;
+WITH TASTE_IV_Properties;
+SYSTEM interfaceview
+PROPERTIES
+  Taste::dataView => ("DataView");
+  Taste::dataViewPath => ("DataView.aadl");
+END interfaceview;
+
+SYSTEM IMPLEMENTATION interfaceview.others
+SUBCOMPONENTS
+  ros_bridge : SYSTEM interfaceview::IV::ros_bridge::ros_bridge.others {
+    Taste::coordinates => "150124 49144 197052 79064";
+  };
+  test : SYSTEM interfaceview::IV::test::test.others {
+    Taste::coordinates => "78577 49153 123301 78286";
+  };
+CONNECTIONS
+  ros_bridge_PI_pointToRos_test_RI_pointToRos : SUBPROGRAM ACCESS ros_bridge.PI_pointToRos -> test.RI_pointToRos {
+    Taste::coordinates => "123301 56713 136712 56713 136712 57019 150124 57019";
+  };
+  test_PI_point32fromRos_ros_bridge_RI_point32fromRos : SUBPROGRAM ACCESS test.PI_point32fromRos -> ros_bridge.RI_point32fromRos {
+    Taste::coordinates => "150124 68044 136712 68044 136712 68053 123301 68053";
+  };
+END interfaceview.others;
+
+PROPERTIES
+  Taste::dataView => ("DataView");
+  Taste::dataViewPath => ("DataView.aadl");
+  Taste::coordinates => "0 0 297000 210000";
+  Taste::version => "2.0";
+END interfaceview::IV;
+
