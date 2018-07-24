@@ -129,7 +129,9 @@ def forward_to_ros_${pi}(gser):
     rosObj = typeConvert.get_ros_message_object('${typeName}')
     rosObj = typeConvert.gser_to_rosmsg(gser, rosObj)
     if DebugBridge:
-        print('forward_to_ros_${pi} (publish) \n{}'.format(gser))
+        print('forward_to_ros_${pi} (publish)')
+        print('    GSER: {}'.format(gser))
+        print('    MSG:  {}'.format(rosObj))
     publisher_${pi}.publish(rosObj)
 % endfor
 
@@ -146,7 +148,9 @@ def forward_to_taste_${ri}(data):
     '''Forward ${ri} RI to TASTE'''
     gser = typeConvert.rosmsg_to_gser(data)
     if DebugBridge:
-        print('forward_to_taste_${ri} \n{}'.format(gser))
+        print('forward_to_taste_${ri}')
+        print('    MSG:  {}'.format(data))
+        print('    GSER: {}'.format(gser))
     ${ri}_backend.send_${ri}_VN(gser)
 % endfor
 
@@ -205,16 +209,16 @@ def main():
     
     # Start TASTE polling thread
     print('starting TASTE polling thread')
-    poll_ros_bridge = Poll_ros_bridge()
-    poll_ros_bridge.start()
+    polling_thread = Poll_${function}()
+    polling_thread.start()
 
     # Run until node stopped
     try:
         print('bridge is running')
         rospy.spin()
     finally:
-        poll_ros_bridge._bDie = True
-        poll_ros_bridge.join()
+        polling_thread._bDie = True
+        polling_thread.join()
 
 
 

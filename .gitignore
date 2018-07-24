@@ -4,5 +4,5 @@ __pycache__
 .cache
 test/echo_point/taste
 test/echo_point/bridge
-
-test/camera_simulator/build/*
+test/rviz_joints/taste
+test/rviz_joints/bridge

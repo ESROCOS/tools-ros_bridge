@@ -1,0 +1,126 @@
+---------------------------------------------------
+-- AADL2.1
+-- TASTE type interfaceview
+-- 
+-- generated code: do not edit
+---------------------------------------------------
+
+PACKAGE interfaceview::IV::joints_generator
+PUBLIC
+
+WITH interfaceview::IV::joints_bridge;
+WITH Taste;
+WITH DataView;
+WITH TASTE_IV_Properties;
+SUBPROGRAM RI_ur5_joints
+FEATURES
+  js : IN PARAMETER DataView::Sensor_msgs_JointState {
+    Taste::encoding => NATIVE;
+  };
+END RI_ur5_joints;
+
+SUBPROGRAM IMPLEMENTATION RI_ur5_joints.others
+END RI_ur5_joints.others;
+
+SUBPROGRAM PI_step
+END PI_step;
+
+SUBPROGRAM IMPLEMENTATION PI_step.others
+PROPERTIES
+  Compute_Execution_Time => 0 ms .. 0 ms;
+END PI_step.others;
+
+SYSTEM joints_generator
+FEATURES
+  RI_ur5_joints : REQUIRES SUBPROGRAM ACCESS interfaceview::IV::joints_bridge::PI_ur5_joints.others {
+    Taste::coordinates => "118265 72600";
+    Taste::RCMoperationKind => any;
+    Taste::InterfaceName => "ur5_joints";
+    Taste::labelInheritance => "true";
+  };
+  PI_step : PROVIDES SUBPROGRAM ACCESS interfaceview::IV::joints_generator::PI_step.others {
+    Taste::coordinates => "89131 58425";
+    Taste::RCMoperationKind => cyclic;
+    Taste::RCMperiod => 100 ms;
+    Taste::InterfaceName => "step";
+  };
+PROPERTIES
+  Source_Language => (C);
+  Taste::Active_Interfaces => any;
+END joints_generator;
+
+SYSTEM IMPLEMENTATION joints_generator.others
+END joints_generator.others;
+
+END interfaceview::IV::joints_generator;
+
+PACKAGE interfaceview::IV::joints_bridge
+PUBLIC
+
+WITH Taste;
+WITH DataView;
+WITH TASTE_IV_Properties;
+SUBPROGRAM PI_ur5_joints
+FEATURES
+  js : IN PARAMETER DataView::Sensor_msgs_JointState {
+    Taste::encoding => NATIVE;
+  };
+END PI_ur5_joints;
+
+SUBPROGRAM IMPLEMENTATION PI_ur5_joints.others
+PROPERTIES
+  Compute_Execution_Time => 0 ms .. 0 ms;
+END PI_ur5_joints.others;
+
+SYSTEM joints_bridge
+FEATURES
+  PI_ur5_joints : PROVIDES SUBPROGRAM ACCESS interfaceview::IV::joints_bridge::PI_ur5_joints.others {
+    Taste::coordinates => "151177 63937";
+    Taste::RCMoperationKind => sporadic;
+    Taste::InterfaceName => "ur5_joints";
+  };
+PROPERTIES
+  Source_Language => (GUI);
+  Taste::Active_Interfaces => any;
+END joints_bridge;
+
+SYSTEM IMPLEMENTATION joints_bridge.others
+END joints_bridge.others;
+
+END interfaceview::IV::joints_bridge;
+
+PACKAGE interfaceview::IV
+PUBLIC
+
+WITH interfaceview::IV::joints_generator;
+WITH interfaceview::IV::joints_bridge;
+WITH Taste;
+WITH DataView;
+WITH TASTE_IV_Properties;
+SYSTEM interfaceview
+PROPERTIES
+  Taste::dataView => ("DataView");
+  Taste::dataViewPath => ("DataView.aadl");
+END interfaceview;
+
+SYSTEM IMPLEMENTATION interfaceview.others
+SUBCOMPONENTS
+  joints_generator : SYSTEM interfaceview::IV::joints_generator::joints_generator.others {
+    Taste::coordinates => "89131 52125 118265 82360";
+  };
+  joints_bridge : SYSTEM interfaceview::IV::joints_bridge::joints_bridge.others {
+    Taste::coordinates => "151177 52912 177318 83462";
+  };
+CONNECTIONS
+  joints_bridge_PI_ur5_joints_joints_generator_RI_ur5_joints : SUBPROGRAM ACCESS joints_bridge.PI_ur5_joints -> joints_generator.RI_ur5_joints {
+    Taste::coordinates => "118265 72600 134721 72600 134721 63937 151177 63937";
+  };
+END interfaceview.others;
+
+PROPERTIES
+  Taste::dataView => ("DataView");
+  Taste::dataViewPath => ("DataView.aadl");
+  Taste::coordinates => "0 0 297000 210000";
+  Taste::version => "2.0";
+END interfaceview::IV;
+

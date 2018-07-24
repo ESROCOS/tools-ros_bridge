@@ -18,6 +18,15 @@ import rospy, rosmsg, rospkg, genpy
 from importlib import import_module
 
 
+# Words that need to be replaced in ASN.1 field names
+TasteForbiddenKeywords = [
+    "active", "adding", "all", "alternative", "and", "any", "as", "atleast", "axioms", "block", "call", "channel", "comment", "connect", "connection", "constant", "constants", "create", "dcl", "decision", "default", "else", "endalternative", "endblock", "endchannel", "endconnection", "enddecision", "endgenerator", "endmacro", "endnewtype", "endoperator", "endpackage", "endprocedure", "endprocess", "endrefinement", "endselect", "endservice", "endstate", "endsubstructure", "endsyntype", "endsystem", "env", "error", "export", "exported", "external", "fi", "finalized", "for", "fpar", "from", "gate", "generator", "if", "import", "imported", "in", "inherits", "input", "interface", "join", "literal", "literals", "macro", "macrodefinition", "macroid", "map", "mod", "nameclass", "newtype", "nextstate", "nodelay", "noequality", "none", "not", "now", "offspring", "operator", "operators", "or", "ordering", "out", "output", "package", "parent", "priority", "procedure", "process", "provided", "redefined", "referenced", "refinement", "rem", "remote", "reset", "return", "returns", "revealed", "reverse", "save", "select", "self", "sender", "service", "set", "signal", "signallist", "signalroute", "signalset", "spelling", "start", "state", "stop", "struct", "substructure", "synonym", "syntype", "system", "task", "then", "this", "timer", "to", "type", "use", "via", "view", "viewed", "virtual", "with", "xor", "end", "i", "j", "auto", "const",
+    "abstract", "activate", "and", "assume", "automaton", "bool", "case", "char", "clock", "const", "default", "div", "do", "else", "elsif", "emit", "end", "enum", "every", "false", "fby", "final", "flatten", "fold", "foldi", "foldw", "foldwi", "function", "guarantee", "group", "if", "imported", "initial", "int", "is", "last", "let", "make", "map", "mapfold", "mapi", "mapw", "mapwi", "match", "merge", "mod", "node", "not", "numeric", "of", "onreset", "open", "or", "package", "parameter", "pre", "private", "probe", "public", "real", "restart", "resume", "returns", "reverse", "sensor", "sig", "specialize", "state", "synchro", "tel", "then", "times", "transpose", "true", "type", "unless", "until", "var", "when", "where", "with", "xor",
+    "open", "close", "flag",
+    "name", "size", "data", "range"
+]
+
+
 def find_ros_type(rospack, asn1Type):
     '''
     Finds the ROS type corresponding to an ASN.1 type. 
@@ -63,7 +72,7 @@ def rosmsg_to_gser(msgObj):
         except TypeError as ex:
             raise TypeError('Error serializing slot {}: {}.'.format(slot, str(ex)))
 
-        elements.append('{} {}'.format(slot, value))
+        elements.append('{} {}'.format(slotRosToGser(slot), value))
     
     return '{{ {} }}'.format(', '.join(elements))
         
@@ -105,21 +114,49 @@ def gser_to_rosmsg(gser, rosObj):
     match = re.match('^\s*\{\s*(.*)\s*\}\s*$', gser)
     if match:
         content = match.group(1)
-        gserSlots = content.split(',')
+        gserSlots = split_slots(content)
+
         for i in range(0, len(rosObj.__slots__)):
             slot = rosObj.__slots__[i]
             slotType = rosObj._slot_types[i]
-            match = re.match('^\s*{}\s*(.*)\s*$'.format(slot), gserSlots[i])
+            
+            match = re.match('^\s*{}\s*(.*)\s*$'.format(slotRosToGser(slot)), gserSlots[i])
             if match:
                 value = match.group(1)
                 setattr(rosObj, slot, gser_to_value(value, slotType))
             else:
-                raise ValueError('Cannot parse value for slot {} in {}.'.format(slot, content))
-        
+                raise ValueError('Cannot parse value for slot {} in {}.'.format(slot, gserSlots[i]))
     else:
         raise ValueError('Unexpected GSER format: {}.'.format(gser))
         
     return rosObj
+
+
+def split_slots(txt):
+    '''
+    Splits a string: 'slot_name_1 slot_value_1, slot_name_2 slot_value_2, ...',
+    taking into account that values can contain braces and commas.
+    '''
+    slots = []
+    braces = 0
+    slt = ''
+    
+    for c in txt:
+        if braces == 0 and c == ',':
+            slots.append(slt)
+            slt = ''
+        elif c == '{':
+            braces += 1
+            slt += c
+        elif c == '}':
+            braces -= 1
+            slt += c
+        else:
+            slt += c
+
+    slots.append(slt)
+    
+    return slots
 
 
 def gser_to_value(gser, typeName):
@@ -132,7 +169,15 @@ def gser_to_value(gser, typeName):
     if match:
         # Array type
         elemType = match.group(1)
-        return map(lambda elemStr: gser_to_value(elemStr, elemType), gser.split(','))
+        
+        # Remove braces
+        match = re.match('^\{\s*(.*)\s*\}$', gser)
+        if match:
+            content = match.group(1)
+        else:
+            raise ValueError("GSER string {} doesn't match {} array".format(gser, typeName))
+
+        return map(lambda elemStr: gser_to_value(elemStr, elemType), content.split(','))
         
     else:
         # Scalar type
@@ -145,7 +190,7 @@ def gser_to_value(gser, typeName):
         elif typeName == 'bool':
             return bool(gser.capitalize())
         elif typeName == 'string':
-            return str(gser)
+            return str(gser.strip('"'))
         elif typeName == 'time':
             obj = genpy.message.Time()
             return gser_to_rosmsg(gser, obj)
@@ -177,3 +222,32 @@ def get_ros_message_object(typeName):
         return obj
     else:
         raise ValueError('Unexpected ROS type name {}'.format(typeName))
+
+
+
+def slotGserToRos(asn1FieldName):
+    '''
+    Rename an ASN.1 field name to ROS message field name, considering
+    '-' substitution and forbidden words.
+    '''
+    name = asn1FieldName.replace('-', '_')
+    
+    if name.endswith('_value'):
+        trimmed = name[0:name.rfind('_value')]
+        if trimmed in TasteForbiddenKeywords:
+            return trimmed
+    
+    return name
+
+
+def slotRosToGser(rosSlotName):
+    '''
+    Rename an ROS message field name to ASN.1 field name, considering
+    '-' substitution and forbidden words.
+    '''
+    name = rosSlotName.replace('_', '-')
+
+    if name in TasteForbiddenKeywords:
+        return name + '-value'
+    
+    return name
