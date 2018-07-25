@@ -114,7 +114,7 @@ def gser_to_rosmsg(gser, rosObj):
     match = re.match('^\s*\{\s*(.*)\s*\}\s*$', gser)
     if match:
         content = match.group(1)
-        gserSlots = split_slots(content)
+        gserSlots = split_elements(content)
 
         for i in range(0, len(rosObj.__slots__)):
             slot = rosObj.__slots__[i]
@@ -130,33 +130,6 @@ def gser_to_rosmsg(gser, rosObj):
         raise ValueError('Unexpected GSER format: {}.'.format(gser))
         
     return rosObj
-
-
-def split_slots(txt):
-    '''
-    Splits a string: 'slot_name_1 slot_value_1, slot_name_2 slot_value_2, ...',
-    taking into account that values can contain braces and commas.
-    '''
-    slots = []
-    braces = 0
-    slt = ''
-    
-    for c in txt:
-        if braces == 0 and c == ',':
-            slots.append(slt)
-            slt = ''
-        elif c == '{':
-            braces += 1
-            slt += c
-        elif c == '}':
-            braces -= 1
-            slt += c
-        else:
-            slt += c
-
-    slots.append(slt)
-    
-    return slots
 
 
 def gser_to_value(gser, typeName):
@@ -177,7 +150,7 @@ def gser_to_value(gser, typeName):
         else:
             raise ValueError("GSER string {} doesn't match {} array".format(gser, typeName))
 
-        return map(lambda elemStr: gser_to_value(elemStr, elemType), content.split(','))
+        return map(lambda elemStr: gser_to_value(elemStr, elemType), split_elements(content))
         
     else:
         # Scalar type
@@ -251,3 +224,31 @@ def slotRosToGser(rosSlotName):
         return name + '-value'
     
     return name
+
+
+def split_elements(txt):
+    '''
+    Splits a string: 'A1 A2, { B1, B2, B3 }, { C1 C2 } ...',
+    taking into account that values can contain braces and commas.
+    '''
+    slots = []
+    braces = 0
+    slt = ''
+    
+    for c in txt:
+        if braces == 0 and c == ',':
+            slots.append(slt)
+            slt = ''
+        elif c == '{':
+            braces += 1
+            slt += c
+        elif c == '}':
+            braces -= 1
+            slt += c
+        else:
+            slt += c
+
+    slots.append(slt)
+    
+    return slots
+
