@@ -13,7 +13,7 @@ fi
 
 # Clear previous results
 echo "Clearing previous results"
-#rm -rf ./taste
+rm -rf ./taste
 rm -rf ./bridge
 echo "Done."
 echo ""
@@ -52,7 +52,7 @@ echo ""
 # Instructions to run test
 echo "Bridge component successfully generated."
 echo "To test the component, use the RVIZ configuration test_bridge.lauch, provided"
-echo "in the Git repo https://spass-git-ext.gmv.com/esrocos/ros-ur5_robot."
+echo "in the Git repo https://spass-git-ext.gmv.com/esrocos/ros-ur5_robot.git"
 echo " - open 4 terminals and ensure that the TASTE and ROS environment is loaded"
 echo " - launch ROS core with: roscore"
 echo " - cd to the catkin workspace, and launch RVIZ with: roslaunch src/ur5_robot/launch/test_bridge.launch"
