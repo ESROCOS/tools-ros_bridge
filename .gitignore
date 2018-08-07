@@ -2,7 +2,6 @@ build/*
 *.pyc
 __pycache__
 .cache
-test/echo_point/taste
-test/echo_point/bridge
-test/rviz_joints/taste
-test/rviz_joints/bridge
+test/*/taste
+test/*/bridge
+test/*/*.out
