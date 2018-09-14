@@ -123,14 +123,15 @@ class Poll_${function}(threading.Thread):
     param = iv.get_in_param_idx(function, pi, 0)
     paramType = iv.get_in_param_type(function, pi, param)
     (_, _, typeName) = typeConvert.find_ros_type(rospack, paramType)
-%>\
+%>
 def forward_to_ros_${pi}(gser):
     '''Forward ${pi} PI to ROS'''
-    rosObj = typeConvert.get_ros_message_object('${typeName}')
-    rosObj = typeConvert.gser_to_rosmsg(gser, rosObj)
     if DebugBridge:
         print('forward_to_ros_${pi} (publish)')
         print('    GSER: {}'.format(gser))
+    rosObj = typeConvert.get_ros_message_object('${typeName}')
+    rosObj = typeConvert.gser_to_rosmsg(gser, rosObj)
+    if DebugBridge:
         print('    MSG:  {}'.format(rosObj))
     publisher_${pi}.publish(rosObj)
 % endfor
@@ -143,13 +144,14 @@ def forward_to_ros_${pi}(gser):
     param = iv.get_in_param_idx(function, pi, 0)
     paramType = iv.get_in_param_type(function, pi, param)
     (_, _, typeName) = typeConvert.find_ros_type(rospack, paramType)
-%>\
+%>
 def forward_to_taste_${ri}(data):
     '''Forward ${ri} RI to TASTE'''
-    gser = typeConvert.rosmsg_to_gser(data)
     if DebugBridge:
         print('forward_to_taste_${ri}')
         print('    MSG:  {}'.format(data))
+    gser = typeConvert.rosmsg_to_gser(data)
+    if DebugBridge:
         print('    GSER: {}'.format(gser))
     ${ri}_backend.send_${ri}_VN(gser)
 % endfor

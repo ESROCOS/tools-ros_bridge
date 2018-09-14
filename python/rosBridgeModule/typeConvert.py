@@ -110,24 +110,29 @@ def gser_to_rosmsg(gser, rosObj):
     '''
     if not hasattr(rosObj, '__slots__'):
         raise TypeError('Object does not seem to be a ROS message: {}.'.format(rosObj))
+        
+    if (len(rosObj.__slots__) == 1) and (rosObj.__slots__[0] == 'data'):
+        # Case of basic types (std.msg.String)
+        rosObj.data = gser_to_value(gser, rosObj._slot_types[0])
     
-    match = re.match('^\s*\{\s*(.*)\s*\}\s*$', gser)
-    if match:
-        content = match.group(1)
-        gserSlots = split_elements(content)
-
-        for i in range(0, len(rosObj.__slots__)):
-            slot = rosObj.__slots__[i]
-            slotType = rosObj._slot_types[i]
-            
-            match = re.match('^\s*{}\s*(.*)\s*$'.format(slotRosToGser(slot)), gserSlots[i])
-            if match:
-                value = match.group(1)
-                setattr(rosObj, slot, gser_to_value(value, slotType))
-            else:
-                raise ValueError('Cannot parse value for slot {} in {}.'.format(slot, gserSlots[i]))
     else:
-        raise ValueError('Unexpected GSER format: {}.'.format(gser))
+        match = re.match('^\s*\{\s*(.*)\s*\}\s*$', gser)
+        if match:
+            content = match.group(1)
+            gserSlots = split_elements(content)
+
+            for i in range(0, len(rosObj.__slots__)):
+                slot = rosObj.__slots__[i]
+                slotType = rosObj._slot_types[i]
+                
+                match = re.match('^\s*{}\s*(.*)\s*$'.format(slotRosToGser(slot)), gserSlots[i])
+                if match:
+                    value = match.group(1)
+                    setattr(rosObj, slot, gser_to_value(value, slotType))
+                else:
+                    raise ValueError('Cannot parse value for slot {} in {}.'.format(slot, gserSlots[i]))
+        else:
+            raise ValueError('Unexpected GSER format: {}.'.format(gser))
         
     return rosObj
 
@@ -149,8 +154,12 @@ def gser_to_value(gser, typeName):
             content = match.group(1)
         else:
             raise ValueError("GSER string {} doesn't match {} array".format(gser, typeName))
-
-        return map(lambda elemStr: gser_to_value(elemStr, elemType), split_elements(content))
+            
+        if content.strip() == '':
+            # Case emtpy list
+            return []
+        else:
+            return map(lambda elemStr: gser_to_value(elemStr, elemType), split_elements(content))
         
     else:
         # Scalar type
