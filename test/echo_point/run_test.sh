@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# H2020 ESROCOS Project
+# Company: GMV Aerospace & Defence S.A.U.
+# Licence: GPLv2
+
 # Check environment
 if [ ! $ROS_ROOT ]; then
     echo "ROS envionrment must be loaded to run the test"

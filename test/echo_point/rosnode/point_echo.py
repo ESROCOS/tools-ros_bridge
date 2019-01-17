@@ -1,5 +1,9 @@
 #!/usr/bin/env python2
 
+# H2020 ESROCOS Project
+# Company: GMV Aerospace & Defence S.A.U.
+# Licence: GPLv2
+
 import rospy, rosmsg
 from importlib import import_module
 import geometry_msgs.msg
